@@ -78,22 +78,27 @@ const handler = createMcpHandler(async (server) => {
     macrosWidget.id,
     {
       title: macrosWidget.title,
-      description: `You are a nutrition expert. When given a food description, you MUST analyze it using your built-in nutrition knowledge and generate a complete JSON object with nutritional information.
+      description: `You are a nutrition expert. When given a food description, you MUST:
+1. Analyze the foodDescription using your built-in nutrition knowledge
+2. Generate complete meal data with dailyTotals and loggedMeals
+3. Pass the analyzed data in the analyzedData parameter when calling this tool
 
-CRITICAL: You must analyze the food description and generate the complete meal data BEFORE returning the tool response. The structuredContent field MUST contain:
+CRITICAL: You must analyze the food FIRST, then call this tool with BOTH foodDescription AND analyzedData parameters populated with the complete analyzed meal data.
+
+The analyzedData parameter MUST contain:
 - dailyTotals: { calories: number, protein: number, carbs: number, fat: number }
 - loggedMeals: array of complete meal objects with ingredients
 
 STEP-BY-STEP PROCESS:
-1. Read the foodDescription parameter
+1. Read the foodDescription from the user
 2. Use your nutrition knowledge to analyze the food
 3. Extract weight/portion information (e.g., "100g", "medium", "large")
 4. Calculate accurate nutritional values based on standard serving sizes
 5. Group items into meals according to the rules below
 6. Generate the complete JSON structure with dailyTotals and loggedMeals
-7. Return this complete data in the structuredContent field
+7. Call this tool with foodDescription AND analyzedData parameters both populated
 
-YOU MUST GENERATE THE COMPLETE ANALYSIS - do not return placeholder values or null.
+YOU MUST PROVIDE THE COMPLETE ANALYSIS in the analyzedData parameter - do not leave it empty.
 
 RULES FOR MEAL GROUPING:
 - If items are part of a COMBO/MEAL/DEAL or mentioned WITH each other: Create ONE meal with items as ingredients
@@ -146,75 +151,54 @@ EXAMPLES:
           .describe(
             "The food description from the user (e.g., 'I had 100g of blueberries', 'Big Mac meal', 'pizza and burger')"
           ),
+        analyzedData: z
+          .object({
+            dailyTotals: z.object({
+              calories: z.number(),
+              protein: z.number(),
+              carbs: z.number(),
+              fat: z.number(),
+            }),
+            loggedMeals: z.array(z.any()),
+          })
+          .optional()
+          .describe(
+            "Pre-analyzed meal data. You should analyze the foodDescription using your nutrition knowledge and provide the complete analyzed data here with dailyTotals and loggedMeals arrays."
+          ),
       },
       _meta: widgetMeta(macrosWidget),
     },
-    async ({ foodDescription }) => {
+    async ({ foodDescription, analyzedData }) => {
       try {
-        // IMPORTANT: ChatGPT must analyze the food and return complete meal data
-        // The tool description above provides detailed instructions
-        // ChatGPT will use its native model to analyze the foodDescription
-        // and generate the structuredContent with dailyTotals and loggedMeals
-        
-        // Return structure - ChatGPT will populate this based on its analysis
-        // The content text provides explicit instructions for ChatGPT to follow
+        // If ChatGPT provides analyzed data, use it directly
+        if (analyzedData?.loggedMeals && analyzedData?.dailyTotals) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Food analyzed: ${foodDescription}`,
+              },
+            ],
+            structuredContent: {
+              dailyTotals: analyzedData.dailyTotals,
+              loggedMeals: analyzedData.loggedMeals,
+            },
+            _meta: widgetMeta(macrosWidget),
+          };
+        }
+
+        // If analyzedData not provided, return placeholder
+        // ChatGPT should analyze and call with analyzedData in the first call
         return {
           content: [
             {
               type: "text",
-              text: `Analyze this food: "${foodDescription}"
-
-You MUST analyze this food using your nutrition knowledge and return a complete JSON object. Generate the analysis NOW and return it in this exact format (valid JSON only, no markdown, no code blocks):
-
-{
-  "dailyTotals": {
-    "calories": <number>,
-    "protein": <number>,
-    "carbs": <number>,
-    "fat": <number>
-  },
-  "loggedMeals": [
-    {
-      "meal_name": "<meal name>",
-      "meal_size": "<size>",
-      "total_nutrients": {
-        "calories": <number>,
-        "protein": <number>,
-        "carbs": <number>,
-        "fat": <number>
-      },
-      "ingredients": [
-        {
-          "name": "<ingredient name>",
-          "brand": "<brand>",
-          "serving_info": "<serving info>",
-          "nutrients": {
-            "calories": <number>,
-            "protein": <number>,
-            "carbs": <number>,
-            "fat": <number>
-          }
-        }
-      ]
-    }
-  ]
-}
-
-Return ONLY the JSON object with real nutritional values.`,
+              text: `Please analyze "${foodDescription}" using your nutrition knowledge and call this tool with the analyzedData parameter populated with the complete meal data.`,
             },
           ],
           structuredContent: {
-            // ChatGPT MUST analyze "${foodDescription}" and replace these placeholder values
-            // with real nutritional data based on your analysis
             foodDescription: foodDescription,
-            // REPLACE THESE PLACEHOLDERS with actual analyzed data:
-            dailyTotals: {
-              calories: 0, // Replace with calculated value
-              protein: 0,   // Replace with calculated value  
-              carbs: 0,    // Replace with calculated value
-              fat: 0       // Replace with calculated value
-            },
-            loggedMeals: [] // Replace with array of analyzed meal objects
+            error: "Please call this tool with the analyzedData parameter containing the analyzed meal data.",
           },
           _meta: widgetMeta(macrosWidget),
         };
