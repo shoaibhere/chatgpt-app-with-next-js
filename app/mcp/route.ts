@@ -29,27 +29,31 @@ function widgetMeta(widget: ContentWidget) {
 }
 
 const handler = createMcpHandler(async (server) => {
-  const html = await getAppsSdkCompatibleHtml(baseURL, "/");
+  // Get HTML for the macros widget page
+  const macrosHtml = await getAppsSdkCompatibleHtml(baseURL, "/nmacros");
 
-  const contentWidget: ContentWidget = {
-    id: "show_content",
-    title: "Show Content",
-    templateUri: "ui://widget/content-template.html",
-    invoking: "Loading content...",
-    invoked: "Content loaded",
-    html: html,
-    description: "Displays the homepage content",
-    widgetDomain: "https://nextjs.org/docs",
+  // Define the macros widget
+  const macrosWidget: ContentWidget = {
+    id: "analyze_food",
+    title: "Analyze Food Macros",
+    templateUri: "ui://widget/macros-template.html",
+    invoking: "Analyzing food nutrition...",
+    invoked: "Food analysis complete",
+    html: macrosHtml,
+    description: "Analyzes food descriptions and displays nutritional information in meal cards",
+    widgetDomain: baseURL,
   };
+
+  // Register the resource (widget HTML)
   server.registerResource(
-    "content-widget",
-    contentWidget.templateUri,
+    "macros-widget",
+    macrosWidget.templateUri,
     {
-      title: contentWidget.title,
-      description: contentWidget.description,
+      title: macrosWidget.title,
+      description: macrosWidget.description,
       mimeType: "text/html+skybridge",
       _meta: {
-        "openai/widgetDescription": contentWidget.description,
+        "openai/widgetDescription": macrosWidget.description,
         "openai/widgetPrefersBorder": true,
       },
     },
@@ -58,42 +62,127 @@ const handler = createMcpHandler(async (server) => {
         {
           uri: uri.href,
           mimeType: "text/html+skybridge",
-          text: `<html>${contentWidget.html}</html>`,
+          text: `<html>${macrosWidget.html}</html>`,
           _meta: {
-            "openai/widgetDescription": contentWidget.description,
+            "openai/widgetDescription": macrosWidget.description,
             "openai/widgetPrefersBorder": true,
-            "openai/widgetDomain": contentWidget.widgetDomain,
+            "openai/widgetDomain": macrosWidget.widgetDomain,
           },
         },
       ],
     })
   );
 
+  // Register the tool
   server.registerTool(
-    contentWidget.id,
+    macrosWidget.id,
     {
-      title: contentWidget.title,
-      description:
-        "Fetch and display the homepage content with the name of the user",
-      inputSchema: {
-        name: z.string().describe("The name of the user to display on the homepage"),
+      title: macrosWidget.title,
+      description: `You are a nutrition expert. When given a food description, analyze it using your knowledge and return a JSON object with nutritional information.
+
+CRITICAL INSTRUCTIONS:
+1. Use your built-in nutrition knowledge to analyze the food
+2. Extract weight/portion information from the description (e.g., "100g", "medium", "large")
+3. Calculate accurate nutritional values based on standard serving sizes
+4. Return ONLY valid JSON in the exact structure specified below
+
+RULES FOR MEAL GROUPING:
+- If items are part of a COMBO/MEAL/DEAL or mentioned WITH each other: Create ONE meal with items as ingredients
+- If items are separate (mentioned with "and" but not a combo): Create separate meals
+- Always provide realistic nutritional values - never use zeros
+- Calculate dailyTotals as the sum of all meals' nutrients
+
+REQUIRED JSON STRUCTURE (return this exact format):
+{
+  "dailyTotals": {
+    "calories": <number - sum of all meals>,
+    "protein": <number in grams - sum of all meals>,
+    "carbs": <number in grams - sum of all meals>,
+    "fat": <number in grams - sum of all meals>
+  },
+  "loggedMeals": [
+    {
+      "meal_name": "<meal name>",
+      "meal_size": "<size or weight from description, e.g., '100g', 'Medium', '6 pieces'>",
+      "total_nutrients": {
+        "calories": <number>,
+        "protein": <number in grams>,
+        "carbs": <number in grams>,
+        "fat": <number in grams>
       },
-      _meta: widgetMeta(contentWidget),
+      "ingredients": [
+        {
+          "name": "<ingredient name>",
+          "brand": "<brand name or 'Generic'>",
+          "serving_info": "<serving description, e.g., '1 serving (100g)'>",
+          "nutrients": {
+            "calories": <number>,
+            "protein": <number in grams>,
+            "carbs": <number in grams>,
+            "fat": <number in grams>
+          }
+        }
+      ]
+    }
+  ]
+}
+
+EXAMPLES:
+- "100g blueberries" → 1 meal with 57 calories, 1g protein, 14g carbs, 0g fat
+- "Big Mac meal" → 1 meal with ingredients: Big Mac, fries, drink
+- "pizza and burger" → 2 separate meals`,
+      inputSchema: {
+        foodDescription: z
+          .string()
+          .describe(
+            "The food description from the user (e.g., 'I had 100g of blueberries', 'Big Mac meal', 'pizza and burger')"
+          ),
+      },
+      _meta: widgetMeta(macrosWidget),
     },
-    async ({ name }) => {
-      return {
-        content: [
-          {
-            type: "text",
-            text: name,
+    async ({ foodDescription }) => {
+      try {
+        // Return a structure that guides ChatGPT to analyze and populate the data
+        // ChatGPT will use its native model to analyze the foodDescription
+        // based on the detailed tool description above
+        // ChatGPT will then populate structuredContent with the analyzed meal data
+        
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Food to analyze: ${foodDescription}\n\nPlease analyze this food using your nutrition knowledge and return the nutritional data in the JSON structure specified in the tool description.`,
+            },
+          ],
+          structuredContent: {
+            // ChatGPT will populate this entire object based on its analysis
+            // The tool description above provides detailed instructions
+            // ChatGPT uses its built-in model to:
+            // 1. Parse the food description
+            // 2. Extract portion/weight information
+            // 3. Calculate nutritional values
+            // 4. Group items into meals correctly
+            // 5. Return dailyTotals and loggedMeals arrays
+            foodDescription: foodDescription,
+            // ChatGPT will add dailyTotals and loggedMeals here
+            // following the exact structure specified in the tool description
           },
-        ],
-        structuredContent: {
-          name: name,
-          timestamp: new Date().toISOString(),
-        },
-        _meta: widgetMeta(contentWidget),
-      };
+          _meta: widgetMeta(macrosWidget),
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error processing food analysis request: ${foodDescription}`,
+            },
+          ],
+          structuredContent: {
+            error: error instanceof Error ? error.message : "Failed to analyze food. Please try again.",
+          },
+          _meta: widgetMeta(macrosWidget),
+        };
+      }
     }
   );
 });
