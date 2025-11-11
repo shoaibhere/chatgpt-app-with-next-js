@@ -78,17 +78,11 @@ const handler = createMcpHandler(async (server) => {
     macrosWidget.id,
     {
       title: macrosWidget.title,
-      description: `Analyze food descriptions and return nutritional information. You can optionally provide pre-analyzed data in the analyzedData parameter. If not provided, the tool will use ChatGPT's model via API to analyze the food.
-
-OPTIONAL: If you want to analyze the food yourself using your built-in knowledge, provide the analyzedData parameter with:
-- dailyTotals: { calories: number, protein: number, carbs: number, fat: number }
-- loggedMeals: array of complete meal objects with ingredients
-
-If analyzedData is not provided, the tool will automatically analyze the food using ChatGPT's model.
+      description: `Analyze food descriptions and return nutritional information. The tool uses ChatGPT's model via API to analyze the food and return meal data with nutritional information.
 
 RULES FOR MEAL GROUPING:
 - If items are part of a COMBO/MEAL/DEAL or mentioned WITH each other: Create ONE meal with items as ingredients
-- If items are separate (mentioned with "and" but not a combo): Create separate meals
+- If items are separate (mentioned with "and", "vs", "versus", or comparison words): Create SEPARATE meals for comparison
 - Always provide realistic nutritional values - never use zeros
 - Calculate dailyTotals as the sum of all meals' nutrients
 
@@ -130,51 +124,21 @@ REQUIRED JSON STRUCTURE (return this exact format):
 EXAMPLES:
 - "100g blueberries" → 1 meal with 57 calories, 1g protein, 14g carbs, 0g fat
 - "Big Mac meal" → 1 meal with ingredients: Big Mac, fries, drink
-- "pizza and burger" → 2 separate meals`,
+- "pizza and burger" → 2 separate meals (shows 2 cards for comparison)
+- "pizza vs burger" → 2 separate meals (shows 2 cards for comparison)`,
       inputSchema: {
         foodDescription: z
           .string()
           .describe(
             "The food description from the user (e.g., 'I had 100g of blueberries', 'Big Mac meal', 'pizza and burger')"
           ),
-        analyzedData: z
-          .object({
-            dailyTotals: z.object({
-              calories: z.number(),
-              protein: z.number(),
-              carbs: z.number(),
-              fat: z.number(),
-            }),
-            loggedMeals: z.array(z.any()),
-          })
-          .optional()
-          .describe(
-            "Pre-analyzed meal data. You should analyze the foodDescription using your nutrition knowledge and provide the complete analyzed data here with dailyTotals and loggedMeals arrays."
-          ),
       },
       _meta: widgetMeta(macrosWidget),
     },
-    async ({ foodDescription, analyzedData }) => {
+    async ({ foodDescription }) => {
       try {
-        // If ChatGPT provides analyzed data, use it directly
-        if (analyzedData?.loggedMeals && analyzedData?.dailyTotals) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Food analyzed: ${foodDescription}`,
-              },
-            ],
-            structuredContent: {
-              dailyTotals: analyzedData.dailyTotals,
-              loggedMeals: analyzedData.loggedMeals,
-            },
-            _meta: widgetMeta(macrosWidget),
-          };
-        }
-
-        // If analyzedData not provided, use OpenAI API to generate it
-        // This uses ChatGPT's model via API to analyze the food
+        // Use OpenAI API to analyze the food
+        // This uses ChatGPT's model via API to generate meal data
         const apiKey = process.env.OPENAI_API_KEY;
         
         if (!apiKey) {
@@ -197,7 +161,7 @@ EXAMPLES:
 IMPORTANT RULES:
 1. MEAL vs INGREDIENTS logic:
    - If items are part of a COMBO/DEAL/MEAL (like "Big Mac Meal", "Combo", "Deal", or items mentioned WITH each other using "with"): Create ONE meal with ALL items as ingredients
-   - If items are SEPARATE/INDEPENDENT foods mentioned with "and" but NOT part of a combo: Create SEPARATE meals for each
+   - If items are SEPARATE/INDEPENDENT foods mentioned with "and", "vs", "versus", or comparison words: Create SEPARATE meals for each (for comparison)
    
 2. Examples of ONE MEAL (items as ingredients):
    - "Big Mac deal" → 1 meal named "Big Mac Meal" with ingredients: Big Mac burger, fries, drink
@@ -205,8 +169,10 @@ IMPORTANT RULES:
    - "chicken combo" → 1 meal with all combo items as ingredients
    - "pizza with wings" → 1 meal with 2 ingredients
 
-3. Examples of SEPARATE MEALS:
-   - "pizza and burger" → 2 separate meals (Pizza, Burger)
+3. Examples of SEPARATE MEALS (for comparison):
+   - "pizza and burger" → 2 separate meals (Pizza card, Burger card)
+   - "pizza vs burger" → 2 separate meals (Pizza card, Burger card)
+   - "pizza versus burger" → 2 separate meals (Pizza card, Burger card)
    - "I had chicken then later ate ice cream" → 2 separate meals
    - "breakfast was eggs, lunch was sandwich" → 2 separate meals
 
