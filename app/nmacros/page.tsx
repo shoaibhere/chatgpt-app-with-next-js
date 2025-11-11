@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useWidgetProps } from "../hooks";
+import { useWidgetProps, useMaxHeight } from "../hooks";
 
 // Type definitions
 interface Nutrients {
@@ -34,6 +34,7 @@ interface MealData {
 
 export default function Macros() {
   const [isLoading, setIsLoading] = useState(true);
+  const maxHeight = useMaxHeight();
   const toolOutput = useWidgetProps<{
     result?: {
       structuredContent?: MealData;
@@ -96,7 +97,10 @@ export default function Macros() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans">
+      <div 
+        className="bg-white text-black font-sans"
+        style={{ maxHeight: maxHeight ?? undefined }}
+      >
         <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
             <p className="text-sm sm:text-base text-red-800">{error}</p>
@@ -109,7 +113,10 @@ export default function Macros() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans">
+      <div 
+        className="bg-white text-black font-sans"
+        style={{ maxHeight: maxHeight ?? undefined }}
+      >
         <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="flex flex-col items-center justify-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
@@ -124,7 +131,10 @@ export default function Macros() {
   // Show empty state
   if (meals.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-4">
+      <div 
+        className="bg-white text-black font-sans p-4"
+        style={{ maxHeight: maxHeight ?? undefined }}
+      >
         <div className="max-w-4xl mx-auto">
           <p className="text-gray-500 text-center">No meal data available</p>
         </div>
@@ -133,8 +143,11 @@ export default function Macros() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans">
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+    <div 
+      className="bg-white text-black font-sans"
+      style={{ maxHeight: maxHeight ?? undefined }}
+    >
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         {/* Meal Cards */}
         <div className="space-y-4">
           {meals.map((meal, mealIndex) => (
