@@ -98,14 +98,14 @@ export default function Macros() {
   if (error) {
     return (
       <div 
-        className="bg-white text-black font-sans"
+        className="font-sans bg-transparent"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
-        <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
             <p className="text-sm sm:text-base text-red-800">{error}</p>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
@@ -114,16 +114,16 @@ export default function Macros() {
   if (isLoading) {
     return (
       <div 
-        className="bg-white text-black font-sans"
+        className="font-sans bg-transparent"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
-        <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="flex flex-col items-center justify-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
             <p className="text-gray-600 text-base font-medium">Analyzing food nutrition...</p>
             <p className="text-gray-500 text-sm mt-2">Please wait</p>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
@@ -132,7 +132,7 @@ export default function Macros() {
   if (meals.length === 0) {
     return (
       <div 
-        className="bg-white text-black font-sans p-4"
+        className="font-sans bg-transparent p-4"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
         <div className="max-w-4xl mx-auto">
@@ -144,17 +144,15 @@ export default function Macros() {
 
   return (
     <div 
-      className="bg-white text-black font-sans"
+      className="font-sans bg-transparent"
       style={{ maxHeight: maxHeight ?? undefined }}
     >
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-        {/* Meal Cards */}
-        <div className="space-y-4">
-          {meals.map((meal, mealIndex) => (
-            <MealCard key={mealIndex} meal={meal} />
-          ))}
-        </div>
-      </main>
+      {/* Meal Cards */}
+      <div className="space-y-4 px-3 sm:px-4 py-3 sm:py-4">
+        {meals.map((meal, mealIndex) => (
+          <MealCard key={mealIndex} meal={meal} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -249,10 +247,10 @@ function MealCard({ meal }: MealCardProps) {
                 {/* Ingredient Header - Name and Serving Info */}
                 <div className="mb-3">
                   <div className="flex items-baseline gap-2">
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-900">
+                    <h4 className="text-lg sm:text-xl font-semibold text-gray-900">
                       {ingredient.name}
                     </h4>
-                    <span className="text-xs sm:text-sm text-gray-500">
+                    <span className="text-sm sm:text-base text-gray-500">
                       ({ingredient.serving_info})
                     </span>
                   </div>
@@ -261,26 +259,26 @@ function MealCard({ meal }: MealCardProps) {
                 {/* Compact Nutrition Grid - Inline values */}
                 <div className="grid grid-cols-4 gap-3 sm:gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-gray-500 text-xs mb-1">Calories</div>
-                    <div className="text-base sm:text-lg font-bold text-gray-900">
+                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Calories</div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-900">
                       {Math.round(ingredient.nutrients.calories)}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-gray-500 text-xs mb-1">Protein (g)</div>
-                    <div className="text-base sm:text-lg font-bold text-gray-900">
+                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Protein (g)</div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-900">
                       {Math.round(ingredient.nutrients.protein)}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-gray-500 text-xs mb-1">Carbs (g)</div>
-                    <div className="text-base sm:text-lg font-bold text-gray-900">
+                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Carbs (g)</div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-900">
                       {Math.round(ingredient.nutrients.carbs)}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-gray-500 text-xs mb-1">Fat (g)</div>
-                    <div className="text-base sm:text-lg font-bold text-gray-900">
+                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Fat (g)</div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-900">
                       {Math.round(ingredient.nutrients.fat)}
                     </div>
                   </div>
