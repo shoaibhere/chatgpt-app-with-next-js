@@ -178,6 +178,7 @@ IMPORTANT RULES:
 
 4. Calculate dailyTotals as the sum of all meals' nutrients.
 5. YOU MUST PROVIDE REALISTIC NUTRITIONAL VALUES - DO NOT USE ZEROS! Use standard serving sizes and accurate calorie/macro estimates.
+6. IMPORTANT: The total_nutrients for each meal will be automatically recalculated by summing the ingredients, so focus on providing accurate individual ingredient values. The system will ensure totals match the sum of parts.
 
 {
   "dailyTotals": {
@@ -260,7 +261,46 @@ Return ONLY the JSON object with REAL nutritional values, nothing else.`;
           throw new Error("Invalid response format from AI. Please try again.");
         }
 
-        // Return the analyzed data
+        // Recalculate total_nutrients for each meal by summing ingredients
+        // This ensures consistency - the total will always match the sum of parts
+        const recalculatedMeals = data.loggedMeals.map((meal: any) => {
+          if (meal.ingredients && meal.ingredients.length > 0) {
+            // Sum up all ingredients' nutrients
+            const calculatedTotal = meal.ingredients.reduce(
+              (acc: any, ingredient: any) => {
+                return {
+                  calories: acc.calories + (ingredient.nutrients?.calories || 0),
+                  protein: acc.protein + (ingredient.nutrients?.protein || 0),
+                  carbs: acc.carbs + (ingredient.nutrients?.carbs || 0),
+                  fat: acc.fat + (ingredient.nutrients?.fat || 0),
+                };
+              },
+              { calories: 0, protein: 0, carbs: 0, fat: 0 }
+            );
+
+            // Use the calculated total instead of the AI-provided one
+            return {
+              ...meal,
+              total_nutrients: calculatedTotal,
+            };
+          }
+          return meal;
+        });
+
+        // Recalculate dailyTotals from the recalculated meals
+        const recalculatedDailyTotals = recalculatedMeals.reduce(
+          (acc: any, meal: any) => {
+            return {
+              calories: acc.calories + (meal.total_nutrients?.calories || 0),
+              protein: acc.protein + (meal.total_nutrients?.protein || 0),
+              carbs: acc.carbs + (meal.total_nutrients?.carbs || 0),
+              fat: acc.fat + (meal.total_nutrients?.fat || 0),
+            };
+          },
+          { calories: 0, protein: 0, carbs: 0, fat: 0 }
+        );
+
+        // Return the analyzed data with recalculated totals
         return {
           content: [
             {
@@ -269,8 +309,8 @@ Return ONLY the JSON object with REAL nutritional values, nothing else.`;
             },
           ],
           structuredContent: {
-            dailyTotals: data.dailyTotals,
-            loggedMeals: data.loggedMeals,
+            dailyTotals: recalculatedDailyTotals,
+            loggedMeals: recalculatedMeals,
           },
           _meta: widgetMeta(macrosWidget),
         };
