@@ -98,13 +98,11 @@ export default function Macros() {
   if (error) {
     return (
       <div 
-        className="font-sans bg-transparent"
+        className="font-sans max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
-            <p className="text-sm sm:text-base text-red-800">{error}</p>
-          </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+          <p className="text-sm sm:text-base text-red-800">{error}</p>
         </div>
       </div>
     );
@@ -114,15 +112,13 @@ export default function Macros() {
   if (isLoading) {
     return (
       <div 
-        className="font-sans bg-transparent"
+        className="font-sans max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
-            <p className="text-gray-600 text-base font-medium">Analyzing food nutrition...</p>
-            <p className="text-gray-500 text-sm mt-2">Please wait</p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
+          <p className="text-gray-600 text-base font-medium">Analyzing food nutrition...</p>
+          <p className="text-gray-500 text-sm mt-2">Please wait</p>
         </div>
       </div>
     );
@@ -132,27 +128,22 @@ export default function Macros() {
   if (meals.length === 0) {
     return (
       <div 
-        className="font-sans bg-transparent p-4"
+        className="font-sans max-w-4xl mx-auto p-4"
         style={{ maxHeight: maxHeight ?? undefined }}
       >
-        <div className="max-w-4xl mx-auto">
-          <p className="text-gray-500 text-center">No meal data available</p>
-        </div>
+        <p className="text-gray-500 text-center">No meal data available</p>
       </div>
     );
   }
 
   return (
     <div 
-      className="font-sans bg-transparent"
+      className="font-sans space-y-4 px-3 sm:px-4 py-3 sm:py-4"
       style={{ maxHeight: maxHeight ?? undefined }}
     >
-      {/* Meal Cards */}
-      <div className="space-y-4 px-3 sm:px-4 py-3 sm:py-4">
-        {meals.map((meal, mealIndex) => (
-          <MealCard key={mealIndex} meal={meal} />
-        ))}
-      </div>
+      {meals.map((meal, mealIndex) => (
+        <MealCard key={mealIndex} meal={meal} />
+      ))}
     </div>
   );
 }
