@@ -188,7 +188,7 @@ function MealCard({ meal }: MealCardProps) {
 
             {/* Title and Size/Weight */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-0.5">
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-0.5">
                 {meal.meal_name}
               </h3>
               {meal.meal_size && (
@@ -208,7 +208,7 @@ function MealCard({ meal }: MealCardProps) {
               <div className="text-gray-500 text-xs sm:text-sm mb-1">
                 Calories
               </div>
-              <div className="text-lg sm:text-xl font-bold text-gray-900">
+              <div className="text-lg sm:text-xl font-medium text-gray-900">
                 {Math.round(meal.total_nutrients.calories)}
               </div>
             </div>
@@ -216,7 +216,7 @@ function MealCard({ meal }: MealCardProps) {
               <div className="text-gray-500 text-xs sm:text-sm mb-1">
                 Protein (g)
               </div>
-              <div className="text-lg sm:text-xl font-bold text-gray-900">
+              <div className="text-lg sm:text-xl font-medium text-gray-900">
                 {Math.round(meal.total_nutrients.protein)}
               </div>
             </div>
@@ -224,7 +224,7 @@ function MealCard({ meal }: MealCardProps) {
               <div className="text-gray-500 text-xs sm:text-sm mb-1">
                 Carbs (g)
               </div>
-              <div className="text-lg sm:text-xl font-bold text-gray-900">
+              <div className="text-lg sm:text-xl font-medium text-gray-900">
                 {Math.round(meal.total_nutrients.carbs)}
               </div>
             </div>
@@ -232,7 +232,7 @@ function MealCard({ meal }: MealCardProps) {
               <div className="text-gray-500 text-xs sm:text-sm mb-1">
                 Fat (g)
               </div>
-              <div className="text-lg sm:text-xl font-bold text-gray-900">
+              <div className="text-lg sm:text-xl font-medium text-gray-900">
                 {Math.round(meal.total_nutrients.fat)}
               </div>
             </div>
@@ -249,7 +249,7 @@ function MealCard({ meal }: MealCardProps) {
                 {/* Ingredient Header - Name and Serving Info */}
                 <div className="mb-3">
                   <div className="flex items-baseline gap-2">
-                    <h4 className="text-lg sm:text-xl font-semibold text-gray-900">
+                    <h4 className="text-lg sm:text-xl font-medium text-gray-900">
                       {ingredient.name}
                     </h4>
                     <span className="text-sm sm:text-base text-gray-500">
@@ -260,29 +260,17 @@ function MealCard({ meal }: MealCardProps) {
 
                 {/* Compact Nutrition Grid - Inline values */}
                 <div className="grid grid-cols-4 gap-3 sm:gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Calories</div>
-                    <div className="text-lg sm:text-xl font-bold text-gray-900">
-                      {Math.round(ingredient.nutrients.calories)}
-                    </div>
+                  <div className="text-center text-lg sm:text-xl font-medium text-gray-900">
+                    {Math.round(ingredient.nutrients.calories)}
                   </div>
-                  <div className="text-center">
-                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Protein (g)</div>
-                    <div className="text-lg sm:text-xl font-bold text-gray-900">
-                      {Math.round(ingredient.nutrients.protein)}
-                    </div>
+                  <div className="text-center text-lg sm:text-xl font-medium text-gray-900">
+                    {Math.round(ingredient.nutrients.protein)}
                   </div>
-                  <div className="text-center">
-                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Carbs (g)</div>
-                    <div className="text-lg sm:text-xl font-bold text-gray-900">
-                      {Math.round(ingredient.nutrients.carbs)}
-                    </div>
+                  <div className="text-center text-lg sm:text-xl font-medium text-gray-900">
+                    {Math.round(ingredient.nutrients.carbs)}
                   </div>
-                  <div className="text-center">
-                    <div className="text-gray-500 text-xs sm:text-sm mb-1">Fat (g)</div>
-                    <div className="text-lg sm:text-xl font-bold text-gray-900">
-                      {Math.round(ingredient.nutrients.fat)}
-                    </div>
+                  <div className="text-center text-lg sm:text-xl font-medium text-gray-900">
+                    {Math.round(ingredient.nutrients.fat)}
                   </div>
                 </div>
 
